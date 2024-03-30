@@ -6,14 +6,16 @@ from learn_caching import models, serializers
 
 
 class PostListAPIView(ListAPIView):
-    queryset = models.Post.objects.all().order_by("id")
+    queryset = models.Post.objects.all()[:100]
     serializer_class = serializers.PostSerializer
 
-    def list(self, request, *args, **kwargs):
+    def get(self, request):
         posts = cache.get("posts", None)
-        if posts is None:
-            queryset = self.filter_queryset(self.get_queryset())
-            posts = self.get_serializer(queryset, many=True)
-            cache.set("posts", posts.data, 60 * 15)
-            return Response(posts.data)
-        return Response(posts)
+        if posts:
+            return Response(posts)
+        return super().get(request)
+
+    def list(self, request, *args, **kwargs):
+        posts = super().list(request)
+        cache.set("posts", posts.data)
+        return Response(posts.data)

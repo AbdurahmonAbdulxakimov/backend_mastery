@@ -11,6 +11,13 @@ def post_save_handler(sender, instance, created, **kwargs):
     """
     Post save signal handler
     """
-    posts = models.Post.objects.all().order_by("id")
-    serializer = PostSerializer(posts, many=True)
-    cache.set("posts", serializer.data, 60 * 15)
+
+    if created:
+        post = PostSerializer(instance)
+        data = cache.get("posts")
+        data.append(post.data)
+    else:
+        posts = models.Post.objects.all()
+        posts = PostSerializer(posts, many=True)
+        cache.set("posts", posts)
+    cache.set("posts", data)
