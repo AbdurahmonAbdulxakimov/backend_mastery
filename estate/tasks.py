@@ -5,10 +5,12 @@ from bs4 import BeautifulSoup
 
 from estate.models import Estate
 
+coloredlogs.auto_install()
+
 
 @shared_task()
 def get_estates_task():
-    coloredlogs.info("\nTask started...")
+    coloredlogs.logging.critical("Task started")
 
     html = requests.get("https://www.olx.uz/nedvizhimost/").text
     soup = BeautifulSoup(html, "html.parser")
@@ -16,19 +18,26 @@ def get_estates_task():
     posts = soup.find_all(attrs={"class": "css-1venxj6"})
     for post in posts:
         title: str = post.find("h6").text
-        price: float = float(
+        price: str = (
             post.find(attrs={"data-testid": "ad-price"})
             .text.replace("Договорная", "")
             .replace("сум", "")
             .strip()
+            .replace(" ", "")
         )
         location: str = (
             post.find(attrs={"data-testid": "location-date"})
             .text.split(" - ")[0]
             .strip()
         )
-        area: str = post.find(attrs={"class": "css-1kfqt7f"}).text
+        area: str = (
+            post.find(attrs={"class": "css-1kfqt7f"}).text.replace("м²", "").strip()
+        )
 
-        Estate.objects.create(title=title, price=price, location=location, area=area)
+        obj, created = Estate.objects.get_or_create(
+            title=title, price=price, location=location, area=area
+        )
 
-    coloredlogs.info("Task ended!")
+        obj.save()
+
+    coloredlogs.logging.critical("Task ended!")

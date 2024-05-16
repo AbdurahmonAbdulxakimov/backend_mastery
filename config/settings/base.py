@@ -80,6 +80,10 @@ THIRD_PARTY_APPS = [
     "rest_framework.authtoken",
     "corsheaders",
     "drf_spectacular",
+    # Django Elasticsearch integration
+    "django_elasticsearch_dsl",
+    # Django REST framework Elasticsearch integration (this package)
+    "django_elasticsearch_dsl_drf",
 ]
 
 LOCAL_APPS = [
@@ -88,6 +92,7 @@ LOCAL_APPS = [
     "learn_menagement",
     "l_celery",
     "estate",
+    "books",
     # Your stuff: custom apps go here
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -337,3 +342,13 @@ SPECTACULAR_SETTINGS = {
 }
 # Your stuff...
 # ------------------------------------------------------------------------------
+# Elasticsearch configuration
+ELASTICSEARCH_DSL = {
+    "default": {"hosts": "http://localhost:9200"},
+}
+
+# Name of the Elasticsearch index
+ELASTICSEARCH_INDEX_NAMES = {
+    "books.documents.book": "book",
+    "books.documents.author": "author",
+}
